@@ -3,13 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title
-      style="
-        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-      "
-    >
-      URL Shortener
-    </title>
+    <title>URL Shortener</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='styles.css') }}"
@@ -23,9 +17,7 @@
       <input type="text" id="alias" placeholder="Custom Alias (optional)" />
       <div class="button-group">
         <button onclick="shortenURL()">Shorten URL</button>
-        <button id="qr-btn" onclick="generateQR()" disabled>
-          Generate QR Code
-        </button>
+        <button id="qr-btn" onclick="generateQR()">Generate QR Code</button>
       </div>
       <div id="result"></div>
       <div id="qr-popup" class="hidden">

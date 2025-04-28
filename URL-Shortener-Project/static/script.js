@@ -5,57 +5,76 @@ function shortenURL() {
   fetch("/shorten", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ url, alias }),
+    body: new URLSearchParams({ url, alias: alias || "" }),
   })
     .then((response) => response.json())
     .then((data) => {
       if (data.error) {
         alert(data.error);
       } else {
-        const shortURL = data.short_url; // ✅ Assign shortURL properly
+        const shortURL = data.short_url;
 
-        // Display the shortened URL
-        document.getElementById(
-          "result"
-        ).innerHTML = `Shortened URL: <a href="${shortURL}" target="_blank">${shortURL}</a>`;
+        document.getElementById("result").innerHTML =
+          `Shortened URL: <a href="${shortURL}" target="_blank">${shortURL}</a>`;
 
-        // Automatically generate QR code for the shortened URL
-        generateQR(shortURL); // ✅ Now shortURL is correctly assigned
+        // ✅ Save to Firebase
+        saveToFirebase(alias || shortURL.split("/").pop(), url, shortURL);
+
+        // ✅ Generate QR
+        generateQR(shortURL);
       }
     })
-    .catch((error) => console.error("Error:", error));
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 }
 
-function generateQR(shortURL = null) {
-  if (!shortURL) {
-    shortURL = document.querySelector("#result a")?.href; // Get the shortened URL from UI
-  }
+function saveToFirebase(alias, originalURL, shortURL) {
+  // Use the globally available Firebase object
+  firebase.database().ref("urls/" + alias).set({
+    original: originalURL,
+    short: shortURL,
+    createdAt: new Date().toISOString(),
+  });
+}
 
-  if (!shortURL) {
-    alert("Please shorten a URL first!");
-    return;
-  }
-
-  console.log("Sending QR Request with URL:", shortURL); // Debugging
-
+function generateQR(url) {
   fetch("/generate_qr", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url: shortURL }), // 🔹 Ensure this matches Flask
+    body: JSON.stringify({ url }),
   })
-    .then((response) => response.json())
+    .then((res) => res.json())
     .then((data) => {
-      console.log("QR Response Data:", data); // Debugging response
       if (data.error) {
         alert(data.error);
       } else {
-        document.getElementById("qr-image").src = data.qr_code;
-        document.getElementById("qr-popup").style.display = "block";
+        const qrImage = document.getElementById("qr-image");
+        const popup = document.getElementById("qr-popup");
+        qrImage.src = data.qr_code;
+        popup.classList.remove("hidden");
       }
     })
-    .catch((error) => console.error("Error:", error));
+    .catch((err) => {
+      console.error("QR generation failed:", err);
+    });
 }
 
 function closePopup() {
-  document.getElementById("qr-popup").style.display = "none";
+  document.getElementById("qr-popup").classList.add("hidden");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("shorten-btn").addEventListener("click", shortenURL);
+
+  document.getElementById("qr-btn").addEventListener("click", () => {
+    const resultLink = document.querySelector("#result a");
+    if (resultLink) {
+      generateQR(resultLink.href);
+    } else {
+      alert("Please shorten a URL first.");
+    }
+  });
+
+  document.getElementById("close-qr").addEventListener("click", closePopup);
+});

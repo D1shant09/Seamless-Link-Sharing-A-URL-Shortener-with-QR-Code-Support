@@ -10,10 +10,73 @@ const firebaseConfig = {
   measurementId: "G-GXGX13447Y"
 };
 
-// Initialize Firebase with the compat version for non-modules
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+// Initialize Firebase with error handling
+function initializeFirebase() {
+  try {
+    // Check if Firebase is already initialized
+    if (!firebase.apps.length) {
+      const app = firebase.initializeApp(firebaseConfig);
+      console.log('Firebase initialized successfully');
+      return app;
+    } else {
+      console.log('Firebase already initialized');
+      return firebase.app();
+    }
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    // Handle initialization error gracefully
+    return null;
+  }
+}
 
-// Now `firebase` and `database` are globally accessible
-window.firebase = firebase;
-window.database = database;
+// Initialize Firebase and get database reference
+const app = initializeFirebase();
+let database = null;
+
+if (app) {
+  try {
+    database = firebase.database();
+    // Set database rules
+    database.ref('.info/connected').on('value', (snapshot) => {
+      if (snapshot.val() === false) {
+        console.warn('Firebase connection lost');
+      }
+    });
+  } catch (error) {
+    console.error('Database initialization error:', error);
+  }
+}
+
+// Export Firebase instances with error handling
+window.firebase = {
+  app: app,
+  database: database,
+  // Helper function to safely write to database
+  writeData: async function(path, data) {
+    if (!database) {
+      console.error('Database not initialized');
+      return false;
+    }
+    try {
+      await database.ref(path).set(data);
+      return true;
+    } catch (error) {
+      console.error('Database write error:', error);
+      return false;
+    }
+  },
+  // Helper function to safely read from database
+  readData: async function(path) {
+    if (!database) {
+      console.error('Database not initialized');
+      return null;
+    }
+    try {
+      const snapshot = await database.ref(path).once('value');
+      return snapshot.val();
+    } catch (error) {
+      console.error('Database read error:', error);
+      return null;
+    }
+  }
+};

@@ -79,6 +79,11 @@ async function shortenURL(url, alias) {
       const shortURL = data.short_url;
       $("result").innerHTML = 
         `Shortened URL: <a href="${shortURL}" target="_blank" rel="noopener noreferrer">${shortURL}</a>`;
+<<<<<<< HEAD
+=======
+      
+      await saveToFirebase(alias || shortURL.split("/").pop(), url, shortURL);
+>>>>>>> 7b1fdf7a45d6f54e4ef04b694f10398dacba2d92
     }
   } catch (error) {
     showError("An error occurred. Please try again later.");
@@ -88,6 +93,22 @@ async function shortenURL(url, alias) {
   }
 }
 
+<<<<<<< HEAD
+=======
+async function saveToFirebase(alias, originalURL, shortURL) {
+  const data = {
+    original: originalURL,
+    short: shortURL,
+    createdAt: new Date().toISOString(),
+  };
+
+  const success = await window.firebase.writeData(`urls/${alias}`, data);
+  if (!success) {
+    console.warn('Failed to save to Firebase');
+  }
+}
+
+>>>>>>> 7b1fdf7a45d6f54e4ef04b694f10398dacba2d92
 async function generateQR(url) {
   if (!url) {
     showError("Please enter a URL first.");

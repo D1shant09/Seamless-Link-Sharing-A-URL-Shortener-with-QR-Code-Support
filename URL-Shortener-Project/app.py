@@ -103,13 +103,6 @@ def generate_qr():
         qr_filename = f"{url_hash}.png"
         qr_path = os.path.join(app.config['QR_CODE_DIR'], qr_filename)
 
-<<<<<<< HEAD
-=======
-        print(f"QR code path: {qr_path}")  # Debug print
-        print(f"Directory exists: {os.path.exists(app.config['QR_CODE_DIR'])}")  # Debug print
-        print(f"Directory is writable: {os.access(app.config['QR_CODE_DIR'], os.W_OK)}")  # Debug print
-
->>>>>>> 7b1fdf7a45d6f54e4ef04b694f10398dacba2d92
         # Generate QR code if it doesn't exist
         if not os.path.exists(qr_path):
             qr = qrcode.QRCode(
@@ -122,17 +115,9 @@ def generate_qr():
             qr.make(fit=True)
             img = qr.make_image(fill='black', back_color='white')
             img.save(qr_path)
-<<<<<<< HEAD
 
         # Return the URL to the QR code image
         qr_url = url_for('static', filename=f'qr_codes/{qr_filename}', _external=True)
-=======
-            print(f"QR code saved: {os.path.exists(qr_path)}")  # Debug print
-
-        # Return the URL to the QR code image
-        qr_url = url_for('static', filename=f'qr_codes/{qr_filename}', _external=True)
-        print(f"QR code URL: {qr_url}")  # Debug print
->>>>>>> 7b1fdf7a45d6f54e4ef04b694f10398dacba2d92
         return jsonify({"qr_code": qr_url})
 
     except Exception as e:
